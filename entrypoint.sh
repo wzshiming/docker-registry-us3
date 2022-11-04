@@ -59,6 +59,7 @@ storage:
       enabled: ${UPLOAD_PURGING:-false}
       age: ${UPLOAD_PURGING_AGE:-168h}
       interval: ${UPLOAD_PURGING_INTERVAL:-24h}
+      dryrun: ${UPLOAD_PURGING_DRYRUN:-false}
     readonly:
       enabled: ${READ_ONLY:-false}
   delete:
