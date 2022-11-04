@@ -56,9 +56,13 @@ storage:
     rootdirectory: ${mountpoint}
   maintenance:
     uploadpurging:
-      enabled: false
+      enabled: ${UPLOAD_PURGING:-false}
+      age: ${UPLOAD_PURGING_AGE:-168h}
+      interval: ${UPLOAD_PURGING_INTERVAL:-24h}
     readonly:
-      enabled: false
+      enabled: ${READ_ONLY:-false}
+  delete:
+    enabled: ${DELETE:-false}
 http:
   addr: ${PORT:-0.0.0.0:5000}
   headers:
