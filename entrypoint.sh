@@ -75,6 +75,10 @@ health:
 validation:
   disabled: true
 
+compatibility:
+  schema1:
+    enabled: true
+
 EOF
 
   if [[ "${REDIRECT}" != "" ]]; then
