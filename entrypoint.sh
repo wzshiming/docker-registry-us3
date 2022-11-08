@@ -61,7 +61,7 @@ storage:
       interval: ${UPLOAD_PURGING_INTERVAL:-24h}
       dryrun: ${UPLOAD_PURGING_DRYRUN:-false}
     readonly:
-      enabled: false
+      enabled: ${READ_ONLY:-false}
   delete:
     enabled: ${DELETE:-false}
 http:
