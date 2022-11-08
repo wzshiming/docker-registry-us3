@@ -6,7 +6,7 @@ COPY /bin/us3fs /bin/us3fs
 
 RUN yum install -y fuse
 
-COPY --from=docker.io/library/registry:2.8.1 /bin/registry /bin/registry
+COPY --from=ghcr.io/wzshiming/distribution/registry:v2.8.1-fork.0 /bin/registry /bin/registry
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]

@@ -61,7 +61,7 @@ storage:
       interval: ${UPLOAD_PURGING_INTERVAL:-24h}
       dryrun: ${UPLOAD_PURGING_DRYRUN:-false}
     readonly:
-      enabled: ${READ_ONLY:-false}
+      enabled: false
   delete:
     enabled: ${DELETE:-false}
 http:
@@ -95,6 +95,8 @@ EOF
     cat <<EOF
 proxy:
   remoteurl: ${REMOTE_URL}
+  write: true
+  localtagslist: true
 EOF
   fi
 }
