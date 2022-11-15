@@ -15,7 +15,7 @@ endpoint: ${ENDPOINT}
 EOF
 
 modprobe fuse
-/bin/us3fs -f --passwd=/etc/us3fs/us3fs.conf --keep_pagecache "${BUCKET}" "${mountpoint}" &
+/bin/us3fs -f --passwd=/etc/us3fs/us3fs.conf --keep_pagecache "${BUCKET}" "${mountpoint}" ${US3FS_OPTS} &
 
 for i in {1..10}; do
   if [ "$(df | grep -o ${mountpoint})" == "${mountpoint}" ]; then
