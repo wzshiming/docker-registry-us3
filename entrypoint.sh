@@ -43,7 +43,7 @@ fi
 
 mkdir -p /etc/docker/registry/
 
-function registry_config() {
+function registry_mirror_config() {
   cat <<EOF
 version: 0.1
 log:
@@ -55,17 +55,12 @@ storage:
   filesystem:
     rootdirectory: ${mountpoint}
   maintenance:
-    uploadpurging:
-      enabled: ${UPLOAD_PURGING:-false}
-      age: ${UPLOAD_PURGING_AGE:-168h}
-      interval: ${UPLOAD_PURGING_INTERVAL:-24h}
-      dryrun: ${UPLOAD_PURGING_DRYRUN:-false}
     readonly:
-      enabled: ${READ_ONLY:-false}
+      enabled: ${MIRROR_READ_ONLY:-false}
   delete:
-    enabled: ${DELETE:-false}
+    enabled: ${MIRROR_DELETE:-false}
 http:
-  addr: ${PORT:-0.0.0.0:5000}
+  addr: ${MIRROR_PORT:-0.0.0.0:5000}
   headers:
     X-Content-Type-Options: [nosniff]
 health:
@@ -81,29 +76,64 @@ compatibility:
 
 EOF
 
-  if [[ "${REDIRECT}" != "" ]]; then
+  if [[ "${MIRROR_REDIRECT}" != "" ]]; then
     cat <<EOF
 middleware:
   storage:
     - name: redirect
       options:
-        baseurl: ${REDIRECT}
+        baseurl: ${MIRROR_REDIRECT}
 EOF
   fi
 
-  if [[ "${REMOTE_URL}" != "" ]]; then
+  if [[ "${MIRROR_REMOTE_URL}" != "" ]]; then
     cat <<EOF
 proxy:
-  remoteurl: ${REMOTE_URL}
-  write: true
-  localtagslist: true
+  remoteurl: ${MIRROR_REMOTE_URL}
 EOF
   fi
 }
 
-registry_config >/etc/docker/registry/config.yml
+function registry_sync_config() {
+  cat <<EOF
+version: 0.1
+log:
+  accesslog:
+    disabled: true
+storage:
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: ${mountpoint}
+  maintenance:
+    readonly:
+      enabled: ${SYNC_READ_ONLY:-false}
+  delete:
+    enabled: ${SYNC_DELETE:-false}
+http:
+  addr: ${SYNC_PORT:-0.0.0.0:80}
+  headers:
+    X-Content-Type-Options: [nosniff]
+health:
+  storagedriver:
+    enabled: false
 
-registry serve /etc/docker/registry/config.yml &
+validation:
+  disabled: true
+
+compatibility:
+  schema1:
+    enabled: true
+EOF
+}
+
+registry_mirror_config >/etc/docker/registry/config-mirror.yml
+
+registry serve /etc/docker/registry/config-mirror.yml &
+
+registry_sync_config >/etc/docker/registry/config-sync.yml
+
+registry serve /etc/docker/registry/config-sync.yml &
 
 echo "Registry started"
 while true; do
