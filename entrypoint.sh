@@ -50,8 +50,6 @@ log:
   accesslog:
     disabled: true
 storage:
-  cache:
-    blobdescriptor: inmemory
   filesystem:
     rootdirectory: ${mountpoint}
   maintenance:
@@ -101,8 +99,6 @@ log:
   accesslog:
     disabled: true
 storage:
-  cache:
-    blobdescriptor: inmemory
   filesystem:
     rootdirectory: ${mountpoint}
   maintenance:
