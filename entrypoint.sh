@@ -14,8 +14,19 @@ secret_key: ${SECRET_KEY}
 endpoint: ${ENDPOINT}
 EOF
 
+function demonize() {
+  local pid
+  "$@" 2>&1 &
+  pid="$!"
+
+  wait "${pid}"
+  echo "PANIC: $*"
+  echo "Exit code: ${pid}"
+  exit 1
+}
+
 modprobe fuse
-/bin/us3fs -f --passwd=/etc/us3fs/us3fs.conf --keep_pagecache "${BUCKET}" "${mountpoint}" ${US3FS_OPTS} &
+demonize us3fs -f --passwd=/etc/us3fs/us3fs.conf --keep_pagecache "${BUCKET}" "${mountpoint}" ${US3FS_OPTS} &
 
 for i in {1..10}; do
   if [ "$(df | grep -o ${mountpoint})" == "${mountpoint}" ]; then
@@ -125,16 +136,17 @@ EOF
 
 registry_mirror_config >/etc/docker/registry/config-mirror.yml
 
-registry serve /etc/docker/registry/config-mirror.yml &
+demonize registry serve /etc/docker/registry/config-mirror.yml &
 
 registry_sync_config >/etc/docker/registry/config-sync.yml
 
-registry serve /etc/docker/registry/config-sync.yml &
+demonize registry serve /etc/docker/registry/config-sync.yml &
 
 echo "Registry started"
 while true; do
   sleep 5
   if [ ! -f "${checkfile}" ]; then
+    echo "PANIC: ${mountpoint} has been unmounted"
     exit 1
   fi
 done
