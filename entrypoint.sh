@@ -15,7 +15,8 @@ endpoint: ${ENDPOINT}
 EOF
 
 modprobe fuse
-/bin/us3fs -f --passwd=/etc/us3fs/us3fs.conf --keep_pagecache "${BUCKET}" "${mountpoint}" ${US3FS_OPTS} &
+us3fs -f --passwd=/etc/us3fs/us3fs.conf --keep_pagecache "${BUCKET}" "${mountpoint}" ${US3FS_OPTS} &
+us3fs_pid=$!
 
 for i in {1..10}; do
   if [ "$(df | grep -o ${mountpoint})" == "${mountpoint}" ]; then
@@ -126,15 +127,34 @@ EOF
 registry_mirror_config >/etc/docker/registry/config-mirror.yml
 
 registry serve /etc/docker/registry/config-mirror.yml &
+registry_mirror_pid=$!
 
 registry_sync_config >/etc/docker/registry/config-sync.yml
 
 registry serve /etc/docker/registry/config-sync.yml &
+registry_sync_pid=$!
 
-echo "Registry started"
+echo "Started"
+echo "us3fs pid: ${us3fs_pid}"
+echo "registry_mirror pid: ${registry_mirror_pid}"
+echo "registry_sync pid: ${registry_sync_pid}"
+
 while true; do
-  sleep 5
-  if [ ! -f "${checkfile}" ]; then
+  if ! kill -0 "${us3fs_pid}" >/dev/null 2>&1; then
+    echo "PANIC: us3fs is not running"
     exit 1
   fi
+  if ! kill -0 "${registry_mirror_pid}" >/dev/null 2>&1; then
+    echo "PANIC: registry_mirror is not running"
+    exit 1
+  fi
+  if ! kill -0 "${registry_sync_pid}" >/dev/null 2>&1; then
+    echo "PANIC: registry_sync is not running"
+    exit 1
+  fi
+  if [ ! -f "${checkfile}" ]; then
+    echo "PANIC: ${checkfile} is not exist"
+    exit 1
+  fi
+  sleep 5
 done
