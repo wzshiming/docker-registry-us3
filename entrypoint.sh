@@ -156,5 +156,5 @@ while true; do
     echo "PANIC: ${checkfile} is not exist"
     exit 1
   fi
-  sleep 5
+  sleep 1
 done
